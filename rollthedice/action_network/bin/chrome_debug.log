@@ -1,0 +1,3 @@
+[0911/012908.281306:WARNING:resource_bundle.cc(358)] locale_file_path.empty() for locale 
+[0911/012908.315008:INFO:cpu_info.cc(46)] Available number of cores: 6
+[0911/012908.317828:VERBOSE1:zygote_main_linux.cc(217)] ZygoteMain: initializing 0 fork delegates

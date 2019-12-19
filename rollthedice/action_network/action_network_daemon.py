@@ -18,27 +18,31 @@ logger.addHandler(handler)
 
 def create_chrome_driver(headless=True):
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--window-size=1280x1696')
-    chrome_options.add_argument('--user-data-dir=/tmp/user-data')
-    chrome_options.add_argument('--hide-scrollbars')
-    chrome_options.add_argument('--enable-logging')
-    chrome_options.add_argument('--log-level=0')
-    chrome_options.add_argument('--v=99')
-    chrome_options.add_argument('--single-process')
-    chrome_options.add_argument('--data-path=/tmp/data-path')
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--homedir=/tmp')
-    chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1280x1696")
+    chrome_options.add_argument("--user-data-dir=/tmp/user-data")
+    chrome_options.add_argument("--hide-scrollbars")
+    chrome_options.add_argument("--enable-logging")
+    chrome_options.add_argument("--log-level=0")
+    chrome_options.add_argument("--v=99")
+    chrome_options.add_argument("--single-process")
+    chrome_options.add_argument("--data-path=/tmp/data-path")
+    chrome_options.add_argument("--ignore-certificate-errors")
+    chrome_options.add_argument("--homedir=/tmp")
+    chrome_options.add_argument("--disk-cache-dir=/tmp/cache-dir")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-setuid-sandbox")
+
     chrome_options.add_argument(
-        'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 '
-        'Safari/537.36')
+        "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 "
+        "Safari/537.36")
     chrome_options.binary_location = os.getcwd() + "/bin/headless-chromium"
     chrome_options.add_argument("--test-type")
     if headless:
         chrome_options.add_argument("--headless")
-    chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
+    chrome_driver = webdriver.Chrome(options=chrome_options)
     return chrome_driver
 
 def poll_action_network(headless=True):
@@ -64,15 +68,21 @@ def poll_loop(chrome_driver=None,headless=True):
         for page_type in SPORT_PAGES[sport_type]:
             parse_next_data(chrome_driver=chrome_driver, sport_type=sport_type, page_type=page_type)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--no-headless", action="store_false", default=True,
                         help="Whether or not to run Selenium in headless mode. Don't enable if debugging")
+    parser.add_argument("--local", action="store_true", default=False,
+                        help="Whether or not to run Selenium in headless mode. Don't enable if debugging")
     args = parser.parse_args()
     datestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
-    with open(os.path.join(ACTION_DIRECTORY, "{}_stdout.txt".format(datestamp)), 'w') as stdout_log, \
-            open(os.path.join(ACTION_DIRECTORY, "{}_stderr.txt".format(datestamp)), 'w') as stderr_log:
-        with daemon.DaemonContext(stdout=stdout_log, stderr=stderr_log, uid=os.getuid(), gid=os.getgid()):
-            poll_action_network(headless=args.no_headless)
+    with open(os.path.join(ACTION_DIRECTORY, "{}_stdout.txt".format(datestamp)), "w") as stdout_log, \
+            open(os.path.join(ACTION_DIRECTORY, "{}_stderr.txt".format(datestamp)), "w") as stderr_log:
+        if args.local:
+            poll_loop(None, args.no_headless)
+        else:
+            with daemon.DaemonContext(stdout=stdout_log, stderr=stderr_log, uid=os.getuid(), gid=os.getgid()):
+                poll_action_network(headless=args.no_headless)
